@@ -28,3 +28,5 @@ airflow_project/
 
  * PythonOperator : 파이썬으로 적성한 로직을 airflow 안에서 직접 실행할때 사용 예) 데이터 가공, api호출, db연동 등 파이썬 라이브러리 활용 
  * BashOperator : 쉘 명령어 또는 쉘 스크립 파일 실행시 사용 예) java, jar실행, 파일 시스템 조작 등 
+
+ * StartDate와 endDate는 DAG 작업 자체가 생성이 되고 유효 기간을 의미 => 과거 일자로 설정해도 Airflow의 backfill과 catchup 기능으로 과거에 밀린 작업들을 현재 시점에서 한꺼번에 순차적으로 실행

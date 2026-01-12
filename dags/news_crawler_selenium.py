@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 import time
 import pandas as pd
 from datetime import datetime
+import sys
 
 '''
 셀레리움과 BeautifulSoup 활용한 네이버 뉴스 크롤러
@@ -129,9 +130,22 @@ def get_news_contents(news_url):
 
 # Set date range and keyword for news search
 if __name__ == "__main__": # 해당 스크립트가 메인 안에 있는 함수만 실행되도록 함
-    start_date = "2020.01.01"
-    end_date = "2020.12.31"
-    keywords = ["AI", "통계"]
+    # start_date = "2020.01.01"
+    # end_date = "2020.12.31"
+
+    if len(sys.argv) > 1:
+        # Airflow가 넣어준 날짜 인자 처리
+        airflow_date = sys.argv[1] # 'YYYY-MM-DD' 형식
+        print(airflow_date)
+        target_date = airflow_date.replace('-', '.')
+        start_date = target_date
+        end_date = target_date
+    else:
+        # 인자가 없을 때의 기본값
+        start_date = "2017.01.01"
+        end_date = "2024.12.31"
+    
+    keywords = ["AI", "데이터과학"]
 
     try:
         all_news_links = get_news_links(keywords, start_date, end_date)
@@ -150,6 +164,7 @@ if __name__ == "__main__": # 해당 스크립트가 메인 안에 있는 함수�
 
         # Save collected data to a DataFrame and CSV
         if news_data :
+            start_date = start_date.replace('.', '_')
             df = pd.DataFrame(news_data)
             filet_path = f"/opt/airflow/dags/data/naver_news_{keywords}_{start_date}.csv"
             df.to_csv(filet_path, index=False, encoding='utf-8-sig')

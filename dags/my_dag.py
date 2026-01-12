@@ -21,7 +21,8 @@ with DAG(
     default_args=default_args,
     description='Sample DAG',
     schedule=timedelta(days=1),  # 매일 실행
-    start_date=datetime(2026, 1, 11),
+    ## start_date=datetime(2026, 1, 13),
+    ## end_date=datetime(2026, 1, 13),
     catchup=False,
 ) as dag:
 

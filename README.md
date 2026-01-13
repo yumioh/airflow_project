@@ -30,3 +30,6 @@ airflow_project/
  * BashOperator : 쉘 명령어 또는 쉘 스크립 파일 실행시 사용 예) java, jar실행, 파일 시스템 조작 등 
 
  * StartDate와 endDate는 DAG 작업 자체가 생성이 되고 유효 기간을 의미 => 과거 일자로 설정해도 Airflow의 backfill과 catchup 기능으로 과거에 밀린 작업들을 현재 시점에서 한꺼번에 순차적으로 실행
+
+ * 경로 확인 
+    docker exec -it e3024f24a4b4 ls -l //opt/airflow/dags/scripts/_news_crawler_selenium.py

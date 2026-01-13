@@ -135,15 +135,15 @@ if __name__ == "__main__": # 해당 스크립트가 메인 안에 있는 함수�
 
     if len(sys.argv) > 1:
         # Airflow가 넣어준 날짜 인자 처리
-        airflow_date = sys.argv[1] # 'YYYY-MM-DD' 형식
-        print(airflow_date)
-        target_date = airflow_date.replace('-', '.')
+        af_date = sys.argv[1] # 'YYYY-MM-DD' 형식
+        print(af_date)
+        target_date = af_date.replace('-', '.')
         start_date = target_date
         end_date = target_date
     else:
         # 인자가 없을 때의 기본값
         start_date = "2017.01.01"
-        end_date = "2024.12.31"
+        end_date = "2017.12.31"
     
     keywords = ["AI", "데이터과학"]
 
@@ -166,8 +166,8 @@ if __name__ == "__main__": # 해당 스크립트가 메인 안에 있는 함수�
         if news_data :
             start_date = start_date.replace('.', '_')
             df = pd.DataFrame(news_data)
-            filet_path = f"/opt/airflow/dags/data/naver_news_{keywords}_{start_date}.csv"
-            df.to_csv(filet_path, index=False, encoding='utf-8-sig')
+            file_path = f"/opt/airflow/dags/data/naver_news_{keywords}_{start_date}.csv"
+            df.to_csv(file_path, index=False, encoding='utf-8-sig')
             print(f"뉴스 데이터 수집 완료! 총 {len(df)}건의 뉴스가 저장되었습니다.")
 
     except Exception as e:

@@ -21,14 +21,14 @@ for year in years:
         default_args=default_args,
         start_date=datetime(year, 1, 1),
         end_date=datetime(year, 12, 31),
-        schedule_interval='@daily', # 매일 하루치씩
-        catchup=True,               # 과거 데이터 수집 활성화
+        schedule_interval='@daily', 
+        catchup=True,               # bakfill 작업 허용
         max_active_runs=1           # 연도별로 딱 하나씩만 실행 (IP 차단 방지)
     ) as dag:
         
         task = BashOperator(
             task_id=f'crawl_task_{year}',
-            bash_command=f'python /opt/airflow/dags/news_crawler_selenium.py {{{{ ds }}}}',
+            bash_command=f'python /opt/airflow/dags/scripts/_news_crawler_selenium.py {{{{ ds }}}}',
         )
         
         # 이 변수가 전역 범위에 있어야 Airflow가 DAG를 인식합니다.

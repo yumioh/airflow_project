@@ -6,6 +6,7 @@ from airflow.operators.python import PythonOperator
 # 1. 기본 설정 (Default Args)
 default_args = {
     'owner': 'airflow', # 소유자
+    'start_date': datetime(2017, 1, 1), # 시작날짜 필수적으로 지정
     'depends_on_past': False, # 작업을 실패애도 예정대로 실행
     'retries': 5, # 재실행 횟수  
     'retry_delay': timedelta(minutes=5), # 재실행 간격

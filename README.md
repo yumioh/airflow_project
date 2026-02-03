@@ -1,6 +1,6 @@
 # AIRFLOW PROJECT
 * version : 3.1.3
-* version : 2.10.4으로 변경
+* version : 2.10.4으로 변경 -- selenium 
 
 # Folder Structure
 airflow_project/
@@ -15,11 +15,20 @@ airflow_project/
  - docker-compose up : yaml 파일에 적힌 컨테이너들을 한꺼번에 만들고 네트워크 연결하고, 실행까지 하는 명령어
  - docker-compose up -d : 터미널을 닫아도 배경(Background)에서 Airflow가 계속 돌아감
  - docker ps : docker 상태 확인
- - docker-compose down : shut down docker
+ - docker-compose down : shutdown docker
  - docker ps --format "{{.Names}}" : 현재 컴퓨터에 돌아가고 있는 서비스 목록
  - docker-compose down --volumes --remove-orphans : 기존 환경 삭제 
  - curl -LfO https://airflow.apache.org/docs/apache-airflow/2.10.4/docker-compose.yaml : 2.10.4 설정 파일 다운로드
  - docker-compose up airflow-init : 초기회(DB와 계정 생성)
+ - docker exec -it e3024f24a4b4 ls -l //opt/airflow/dags/scripts/_news_crawler_selenium.py : 경로 확인 
+ - docker exec -it airflow-airflow-scheduler-1 //bin/bash  : scheduler 들어가기
+ - docker exec -u airflow -it airflow_project-airflow-scheduler-1 /bin/bash -c "pip install selenium beautifulsoup4 pandas"
+ - docker exec -u airflow -it airflow_project-airflow-worker-1 pip install --upgrade pip
+ - docker-compose restart airflow-worker airflow-scheduler : 해당 부분 재시작
+ - docker exec -u 0 -it airflow_project-airflow-worker-1 apt-get update
+ - docker exec -u 0 -it airflow_project-airflow-worker-1 apt-get install -y wget gnupg unzip libgconf-2-4 libnss3 libxss1 libasound2
+ - docker exec -u 0 -it airflow_project-airflow-worker-1 /bin/bash -c "wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && echo 'deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main' >> /etc/apt/sources.list.d/google.list && apt-get update && apt-get install -y google-chrome-stable"
+
 
  * 서비스명
  * airflow_project-airflow-webserver-1 : WEB서비스
@@ -31,5 +40,12 @@ airflow_project/
 
  * StartDate와 endDate는 DAG 작업 자체가 생성이 되고 유효 기간을 의미 => 과거 일자로 설정해도 Airflow의 backfill과 catchup 기능으로 과거에 밀린 작업들을 현재 시점에서 한꺼번에 순차적으로 실행
 
- * 경로 확인 
-    docker exec -it e3024f24a4b4 ls -l //opt/airflow/dags/scripts/_news_crawler_selenium.py
+ * 리눅스 패키지 설치 
+apt-get update \
+   &&  apt-get install -y --no-install-recommends \ 필수적이지 않는거 설치 하지 않음
+   chromium \
+   && apt-get autoremove -yqq --purge \
+   && apt-get clean \
+   && rm -rf /var/lib/apt/lists/*
+
+컨테이너 중지 및 삭제

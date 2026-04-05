@@ -29,6 +29,7 @@ airflow_project/
  - docker exec -u 0 -it airflow_project-airflow-worker-1 apt-get install -y wget gnupg unzip libgconf-2-4 libnss3 libxss1 libasound2
  - docker exec -u 0 -it airflow_project-airflow-worker-1 /bin/bash -c "wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && echo 'deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main' >> /etc/apt/sources.list.d/google.list && apt-get update && apt-get install -y google-chrome-stable"
 
+ - docker-compose restart airflow-scheduler : 서비스를 끄지 않고 실행 중인 프로세스만 재실행
 
  * 서비스명
  * airflow_project-airflow-webserver-1 : WEB서비스
@@ -49,3 +50,6 @@ apt-get update \
    && rm -rf /var/lib/apt/lists/*
 
 컨테이너 중지 및 삭제
+- docker-compose down 기존 컨테이너 삭제
+- docker-compose down -v(기존에 생성된 DB 볼륨까지 지움)
+- docker compose build --no-cache 이전 이미지 캐시 삭제

@@ -1,4 +1,4 @@
 # _news_crawler_selenium.py 파일을 무시하도록 설정
-
-_news_crawler_selenium.py
-crawl_naver_news_daliy_dag.py
+# 단순 파일명이 아니라 정규표현식(Regex)을 사용
+_news_crawler_selenium\.py
+.*/scripts/_news_crawler_selenium\.py

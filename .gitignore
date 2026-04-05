@@ -3,6 +3,7 @@
 *.yml
 dags/data/*.csv
 *.cfg
+config/
 
 # 2. 도커 내부 로그 및 일시적 파일
 logs/
@@ -11,7 +12,6 @@ data/
 .env
 .vscode/
 venv/
-config/
 
 # 3. 파이썬 캐시
 __pycache__/

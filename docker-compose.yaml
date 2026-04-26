@@ -42,6 +42,7 @@
 #                                as described in https://airflow.apache.org/docs/docker-stack/build.html.
 #                                Default: ''
 #
+#
 # Feel free to modify this file to suit your needs.
 ---
 x-airflow-common:
@@ -54,8 +55,8 @@ x-airflow-common:
   environment:
     &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
-    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
-    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow # 메타데이터 DB (DAG 리스트, 사용자등록한 Variables emd)
+    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow #작업 결과 저장소 (실패, 결과값 등)
     AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
     AIRFLOW__CORE__FERNET_KEY: ''
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
@@ -68,6 +69,7 @@ x-airflow-common:
     # See https://airflow.apache.org/docs/apache-airflow/stable/administration-and-deployment/logging-monitoring/check-health.html#scheduler-health-check-server
     # yamllint enable rule:line-length
     AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
+    _PIP_ADDITIONAL_DEPENDENCIES: "openpyxl WTForms<3.0.0"
     # WARNING: Use _PIP_ADDITIONAL_REQUIREMENTS option ONLY for a quick checks
     # for other purpose (development, test and especially production usage) build/extend Airflow image.
     #3 _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
@@ -93,17 +95,18 @@ x-airflow-common:
 services:
   postgres:
     image: postgres:13
+    container_name: airflow-postgres
     environment:
-      POSTGRES_USER: airflow
-      POSTGRES_PASSWORD: airflow
-      POSTGRES_DB: airflow
+      - POSTGRES_USER=airflow
+      - POSTGRES_PASSWORD=airflow
+      - POSTGRES_DB=airflow
     volumes:
-      - postgres-db-volume:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data # 실제 db 저장 경로
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "airflow"]
+      test: ["CMD-SHELL", "pg_isready -U airflow"]
       interval: 10s
+      timeout: 5s
       retries: 5
-      start_period: 5s
     restart: always
 
   redis:
@@ -116,7 +119,7 @@ services:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 30s
-      retries: 50
+      retries: 5
       start_period: 30s
     restart: always
 
@@ -174,6 +177,21 @@ services:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
+  
+# 외부 데이터 저장용 MySQL 서버
+  external-mysql:
+    image: mysql:8.0
+    container_name: external-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: airflow  # 루트 비밀번호
+      MYSQL_DATABASE: fin_db        # 내가 사용할 DB 이름
+      MYSQL_USER: airflow            # 접속용 아이디
+      MYSQL_PASSWORD: airflow        # 접속용 비밀번호
+    ports:
+      - "3306:3306"                       # 내 PC의 DB 툴(DBeaver 등)로 접속할 때 사용
+    volumes:
+      - mysql_data:/var/lib/mysql         # 컨테이너를 꺼도 데이터가 보존되도록 설정
 
   airflow-triggerer:
     <<: *airflow-common
@@ -241,7 +259,8 @@ services:
         fi
         mkdir -p /sources/logs /sources/dags /sources/plugins
         chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins}
-        exec /entrypoint airflow airflow db init && airflow users create --username airflow --firstname airflow --lastname airflow --role Admin --email alinext.apac@gmail.com --password airflow
+        exec /entrypoint airflow db init && airflow users create --username airflow --firstname airflow --lastname airflow --role Admin --email alinext.apac@gmail.com --password airflow
+       # exec /entrypoint airflow airflow db init && airflow users create --username airflow --firstname airflow --lastname airflow --role Admin --email alinext.apac@gmail.com --password airflow
     # yamllint enable rule:line-length
     environment:
       <<: *airflow-common-env
@@ -289,5 +308,7 @@ services:
       airflow-init:
         condition: service_completed_successfully
 
-volumes:
-  postgres-db-volume:
+volumes: # 도커 컨테이너는 컨테이너를 지우면 작업했던 내용이 다 지워짐. 외부에 데이터를 따로 보관해야하는데 이때 volumes을 사용
+  #postgres-db-volume:
+  postgres_data:
+  mysql_data:

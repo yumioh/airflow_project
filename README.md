@@ -5,10 +5,17 @@
 # Folder Structure
 airflow_project/
 ├── dags/                # DAG 파일들이 위치하는 곳
-│   └── my_dag.py  # 여기에 코드를 작성합니다
+│   └── my_dag.py  # 테스트용 DAG
+│   └── rocket_launches.py # thespacedevs 데이터 들고 오는 DAG
 ├── logs/                # 실행 로그가 저장되는 곳
 ├── plugins/             # 커스텀 플러그인 
 └── .venv/               # 파이썬 가상환경 
+
+
+# 도커 핵심 요소 
+- 이미지 : 설계도 실행에 필욯나 모든 파일을 모아둔 읽기 전용 파일 
+- 컨테이너 : 실제 건물 이미지를 실행시킨 상태. 독립된 가상 공간에서 실제로 프로그램이 돌아가는 환경
+- 레지스트리 : 중앙 창고(docker hub) 이미지를 저장하여 똑같은 환경을 다시 꺼내 쓰기 위한 영구 저장소 => github와 유사
 
 # docker 
 * 명령어 : 
@@ -16,6 +23,7 @@ airflow_project/
  - docker-compose up -d : 터미널을 닫아도 배경(Background)에서 Airflow가 계속 돌아감
  - docker ps : docker 상태 확인
  - docker-compose down : shutdown docker
+ - docker-comopse down --volumes : 기존 컨테이너 정리 
  - docker ps --format "{{.Names}}" : 현재 컴퓨터에 돌아가고 있는 서비스 목록
  - docker-compose down --volumes --remove-orphans : 기존 환경 삭제 
  - curl -LfO https://airflow.apache.org/docs/apache-airflow/2.10.4/docker-compose.yaml : 2.10.4 설정 파일 다운로드
@@ -51,5 +59,35 @@ apt-get update \
 
 컨테이너 중지 및 삭제
 - docker-compose down 기존 컨테이너 삭제
-- docker-compose down -v(기존에 생성된 DB 볼륨까지 지움)
+- docker-compose down -v (기존에 생성된 DB 볼륨까지 지움)
 - docker compose build --no-cache 이전 이미지 캐시 삭제
+
+
+해당하는 dag list 확인하기 
+- docker exec -it airflow_project-airflow-scheduler-1 airflow dags list
+
+postgres 컨테이너 meta DB 접속
+- docker exec -it airflow-postgres psql -U airflow
+- \dt : 목록 확인, \q 종료
+
+mysql 접속
+- docker exec -it external-mysql mysql -u airflow -p
+- SET NAMES utf8mb4;
+
+수동 설치 명령어(root)
+- docker exec -u 0 -it airflow_project-airflow-worker-1 python3 -m pip install openpyxl
+- -u 0 (관리자 권환으로 강제 실행)
+- -it (표준입력)
+
+설정 파일 수정한 후 컨테이너를 새로 생성하는 명시 하는 명령어
+- docker-compose up -d --force-recreate
+
+도커
+- 볼륨을 생성한다는 건 컨테이너가 사라져도 데이터는 삭제되지 않게 별도의 저장 공간을 만드는것 
+- 컨테이너 내부에 파일을 저장하면, 컨테이너를 삭제하는 순간 그 안의 데이터는 영구적으로 삭제 => 중요한 데이터는 외부인 호스트 PC에 따로 빼두어야함
+- Named Volume (도커가 관리) : 도커가 호스트 pc의 특정 안전한 구역에 폴더를 만들고 관리 => 사용자는 실제 경로가 어디인지 신경쓸 필요없이 이름만 붙여서 사용
+- Blind Mount(내가 직접 경로 지정) : 내 컴퓨터의 특정 폴더와 컩테이너 내부 폴더를 직접 연결
+
+
+** 공공데이터 api url만 변경하여 airflow 끌고 올 수 있도록 만들기
+** mission : airflow -> elasticsearch로 넣어서 처리하는 방법 생각해보기 

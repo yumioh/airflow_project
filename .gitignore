@@ -22,4 +22,4 @@ __pycache__/
 *.yaml.bak
 *.yml.bak
 *.ymal.back
-*.bak
+*.bak.idea/
